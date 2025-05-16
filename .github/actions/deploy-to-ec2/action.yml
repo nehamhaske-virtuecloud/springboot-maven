@@ -1,0 +1,43 @@
+# .github/actions/deploy-to-ec2/action.yml
+name: "Deploy Spring Boot to EC2"
+description: "Builds the app, uploads via SCP, restarts with systemd"
+inputs:
+  host:
+    required: true
+  username:
+    required: true
+  key:
+    required: true
+  app_dir:
+    required: true
+  app_jar:
+    required: true
+  service_name:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Spring Boot app
+      run: mvn clean package -DskipTests
+      shell: bash
+
+    - name: Copy JAR to EC2 via SCP
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        key: ${{ inputs.key }}
+        source: "target/${{ inputs.app_jar }}"
+        target: "${{ inputs.app_dir }}/app.jar"
+
+    - name: Restart systemd service on EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        key: ${{ inputs.key }}
+        script: |
+          sudo systemctl daemon-reload
+          sudo systemctl restart ${{ inputs.service_name }}
+          sudo systemctl status ${{ inputs.service_name }} --no-pager
