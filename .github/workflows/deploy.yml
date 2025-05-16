@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/deploy-to-ec2
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           app_dir: ${{ secrets.EC2_APP_DIR }}
           app_jar: ${{ secrets.EC2_APP_JAR_NAME }}
